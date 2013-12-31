@@ -1,0 +1,91 @@
+!SESSION 2013-12-31 11:52:02.157 -----------------------------------------------
+eclipse.buildId=M20080221-1800
+java.version=1.7.0_21
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=en_CN
+Command-line arguments:  -os win32 -ws win32 -arch x86
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.765
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\com.collabnet.subversion.merge.feature_3.0.12.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.765
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\net.java.dev.jna_3.4.0.t20120117_1605.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.egit.mylyn_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.egit.source_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.egit_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.jgit.java7_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.jgit.pgm.source_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.jgit.pgm_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.jgit.source_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.eclipse.jgit_3.1.0.201310021548-r.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.maven.ide.eclipse.feature_0.12.1.20110112-1712.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.maven.ide.eclipse.sdk.feature_0.12.1.20110112-1712.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.maven.ide.eclipse.site_0.12.1.20110112-1712.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tigris.subversion.clientadapter.feature_1.8.3.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tigris.subversion.clientadapter.javahl.feature_1.7.8.1.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tigris.subversion.clientadapter.svnkit.feature_1.7.8.1.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tigris.subversion.subclipse.graph.feature_1.1.1.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tigris.subversion.subclipse.mylyn_3.0.0.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tigris.subversion.subclipse_1.8.18.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tmatesoft.svnkit_1.7.5.v1_r9382_v20120718_1415.jar
+
+!ENTRY org.eclipse.update.configurator 2013-12-31 11:52:02.781
+!MESSAGE Unable to find feature.xml in directory: D:\Program Files\eclipse3.3.2\features\org.tmatesoft.svnkit_1.7.8.r9538_v20130107_2001.jar
+
+!ENTRY org.eclipse.debug.ui 4 0 2013-12-31 11:52:46.838
+!MESSAGE Launch shortcut 'org.eclipse.pde.ui.swtLaunchShortcut' enablement expression caused exception. Shortcut was removed.
+!STACK 1
+org.eclipse.core.runtime.CoreException: No property tester contributes a property hasMainType to type class org.eclipse.core.internal.resources.Project
+	at org.eclipse.core.internal.expressions.TypeExtensionManager.getProperty(TypeExtensionManager.java:109)
+	at org.eclipse.core.internal.expressions.TestExpression.evaluate(TestExpression.java:95)
+	at org.eclipse.core.internal.expressions.CompositeExpression.evaluateAnd(CompositeExpression.java:53)
+	at org.eclipse.core.internal.expressions.IterateExpression.evaluate(IterateExpression.java:150)
+	at org.eclipse.core.internal.expressions.CompositeExpression.evaluateAnd(CompositeExpression.java:53)
+	at org.eclipse.core.internal.expressions.WithExpression.evaluate(WithExpression.java:69)
+	at org.eclipse.core.internal.expressions.CompositeExpression.evaluateAnd(CompositeExpression.java:53)
+	at org.eclipse.core.internal.expressions.EnablementExpression.evaluate(EnablementExpression.java:43)
+	at org.eclipse.debug.internal.ui.launchConfigurations.LaunchShortcutExtension.evalEnablementExpression(LaunchShortcutExtension.java:282)
+	at org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationManager.getApplicableConfigurationTypes(LaunchConfigurationManager.java:720)
+	at org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationManager.getApplicableLaunchConfigurations(LaunchConfigurationManager.java:753)
+	at org.eclipse.debug.internal.ui.contextlaunching.LaunchingResourceManager.getResourceLabel(LaunchingResourceManager.java:303)
+	at org.eclipse.debug.internal.ui.contextlaunching.LaunchingResourceManager.computeLabels(LaunchingResourceManager.java:207)
+	at org.eclipse.debug.internal.ui.contextlaunching.LaunchingResourceManager$2.run(LaunchingResourceManager.java:125)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SUBENTRY 1 org.eclipse.core.expressions 4 201 2013-12-31 11:52:46.838
+!MESSAGE No property tester contributes a property hasMainType to type class org.eclipse.core.internal.resources.Project
