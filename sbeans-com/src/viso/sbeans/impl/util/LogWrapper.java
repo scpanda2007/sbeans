@@ -42,18 +42,20 @@ public class LogWrapper {
 		}
 	}
 	
-	public void logThrow(Level level,Throwable t,String message){
+	public void logThrow(Level level,Throwable t,String message,Object param){
 		if(logger.isLoggable(level)){
 			LogRecord lr = new LogRecord(level,message);
 			lr.setThrown(t);
+			lr.setParameters(new Object[]{param});
 			log(lr);
 		}
 	}
 	
-	public void logThrow(Level level,Throwable t,String message){
+	public void logThrow(Level level,Throwable t,String message,Object ...params){
 		if(logger.isLoggable(level)){
 			LogRecord lr = new LogRecord(level,message);
 			lr.setThrown(t);
+			lr.setParameters(params);
 			log(lr);
 		}
 	}
