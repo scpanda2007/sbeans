@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
+import java.nio.channels.Channel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.ReadPendingException;
 import java.nio.channels.WritePendingException;
@@ -16,7 +17,7 @@ import viso.sbeans.impl.util.MessageBuffer;
 /**
  * 异步消息通道
  * */
-public class AsynchronousMessageChannel {
+public class AsynchronousMessageChannel implements Channel{
 	
 	private final AsynchronousByteChannel channel;
 	
@@ -204,5 +205,11 @@ public class AsynchronousMessageChannel {
 			return null;
 		}
 		
+	}
+
+	@Override
+	public boolean isOpen() {
+		// TODO Auto-generated method stub
+		return channel.isOpen();
 	}
 }

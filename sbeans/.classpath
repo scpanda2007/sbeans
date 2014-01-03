@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sbeans-com"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sbeans-internal-api"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/sbeans-api"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
