@@ -1,7 +1,6 @@
 package viso.sbeans.impl.net.test;
 
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -9,6 +8,9 @@ import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import viso.sbeans.impl.util.MessageBuffer;
+import viso.sbeans.session.SessionHeader;
 
 public class TestAsynchronousMessageChannel {
 	InetSocketAddress serverAddress;
@@ -51,18 +53,15 @@ public class TestAsynchronousMessageChannel {
 		createClients(1);
 		try {
 			getClient(0).connect(serverAddress).get();
-			Thread.sleep(200L);
+			Thread.sleep(1000L);
 			byte sends[] = new byte[512];
 			for(int i=0;i<sends.length;i++){
 				sends[i] = (byte)sends[i];
 			}
-			for(int i=0;i<10;i++){
-				ByteBuffer buffer = ByteBuffer.allocate(1024);
-				buffer.put((byte)2);
-				buffer.put(sends);
-				buffer.flip();
-				getClient(0).write(buffer).get();
-			}
+			MessageBuffer buffer = new MessageBuffer(1024);
+			buffer.putByte(SessionHeader.kLoginRequest);
+			getClient(0).write(buffer).get();
+			Thread.sleep(1000L);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

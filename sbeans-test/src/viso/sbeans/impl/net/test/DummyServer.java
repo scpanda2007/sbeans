@@ -1,79 +1,84 @@
 package viso.sbeans.impl.net.test;
 
 import java.net.InetSocketAddress;
-import java.nio.channels.Channel;
-import java.nio.channels.CompletionHandler;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import viso.sbeans.impl.net.AsynchronousMessageChannel;
-import viso.sbeans.impl.net.TcpTransport;
+import viso.sbeans.impl.protocol.ProtocolAcceptorImpl;
 import viso.sbeans.impl.util.LogWrapper;
 import viso.sbeans.impl.util.MessageBuffer;
-import viso.sbeans.protocol.ProtocolAcceptor;
+import viso.sbeans.session.ProtocolAcceptor;
+import viso.sbeans.session.ProtocolHandler;
+import viso.sbeans.session.ProtocolRequestComplete;
+import viso.sbeans.session.SessionAcceptor;
+import viso.sbeans.session.SessionHandler;
 
 public class DummyServer {
 
-	TcpTransport transport;
-
+	SessionAcceptor sessionAcceptor;
+	ProtocolAcceptor acceptor;
+	List<SessionListener> liseners = new ArrayList<SessionListener>();
+	
 	private static LogWrapper logger = new LogWrapper(Logger
 			.getLogger("dummyServer"));
 
 	public DummyServer(InetSocketAddress addr) {
-		transport = new TcpTransport(new Properties());
+		sessionAcceptor = new AppListener();
+		acceptor = new ProtocolAcceptorImpl(new Properties(), sessionAcceptor);
 	}
 
 	public void shutdown(){
-		transport.shutdown();
+		acceptor.shutdown();
 	}
 	
 	public void accept() {
-
-		if (transport.isShutdown()) {
+		if (acceptor.isShutdown()) {
 			throw new IllegalStateException("传输层已关闭");
 		}
-		
-		transport.accept(new ProtocolAcceptorImpl());
-	}
-
-	class ProtocolAcceptorImpl implements ProtocolAcceptor {
-
-		@Override
-		public void receConnection(Channel channel) {
-			// TODO Auto-generated method stub
-			AsynchronousMessageChannel messageChannel = (AsynchronousMessageChannel)channel;
-			messageChannel.read(new ReadHandler(messageChannel));
-			logger.log(Level.FINEST, "收到一条连接");
-		}
-
-		@Override
-		public void shutdown() {
-			// TODO Auto-generated method stub
-			
-		}
+		acceptor.accept();
 	}
 	
-	class ReadHandler implements CompletionHandler<MessageBuffer,Void>{
-		
-		AsynchronousMessageChannel messageChannel;
-		
-		public ReadHandler(AsynchronousMessageChannel messageChannel){
-			this.messageChannel = messageChannel;
-		}
-		
-		@Override
-		public void completed(MessageBuffer arg0, Void arg1) {
-			// TODO Auto-generated method stub
-			logger.log(Level.INFO, "收到一条消息");
-			this.messageChannel.read(this);
-		}
+	class AppListener implements SessionAcceptor{
 
 		@Override
-		public void failed(Throwable arg0, Void arg1) {
+		public void newLogin(ProtocolHandler handler,
+				ProtocolRequestComplete<SessionHandler> loginComplete) {
 			// TODO Auto-generated method stub
-			logger.logThrow(Level.INFO, arg0, "读取消息失败");
+			SessionListener lisener = new SessionListener(handler);
+			liseners.add(lisener);
+			logger.log(Level.INFO, "有新的用户登录进来了");
+			loginComplete.complete(lisener);
 		}
 		
 	}
+	
+	class SessionListener implements SessionHandler{
+
+		ProtocolHandler handler;
+		
+		public SessionListener(ProtocolHandler handler){
+			this.handler = handler;
+		}
+		
+		@Override
+		public void disconnect(ProtocolHandler handler,
+				ProtocolRequestComplete<Void> complete) {
+			// TODO Auto-generated method stub
+			logger.log(Level.INFO, "连接断开");
+			complete.complete(null);
+		}
+
+		@Override
+		public void sessionMessage(MessageBuffer message,
+				ProtocolRequestComplete<Void> complete) {
+			// TODO Auto-generated method stub
+			logger.log(Level.INFO, "断开连接");
+			complete.complete(null);
+		}
+		
+	}
+
 }

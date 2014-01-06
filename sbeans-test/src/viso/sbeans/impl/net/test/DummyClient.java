@@ -2,9 +2,10 @@ package viso.sbeans.impl.net.test;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.Future;
+
+import viso.sbeans.impl.util.MessageBuffer;
 
 public class DummyClient {
 	AsynchronousSocketChannel channel;
@@ -19,8 +20,8 @@ public class DummyClient {
 		return null;
 	}
 	
-	public Future<Integer> write(ByteBuffer buffer){
-		return channel.write(buffer);
+	public Future<Integer> write(MessageBuffer message){
+		return channel.write(message.buffer());
 	}
 	
 	public void shutdown(){

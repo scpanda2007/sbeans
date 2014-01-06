@@ -2,10 +2,8 @@ package viso.sbeans.util.test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import org.junit.Test;
@@ -15,8 +13,8 @@ public class TestCompute {
 	Stack<Double> numberStacks = new Stack<Double>();
 	static Map<String,Integer> optokens = new HashMap<String,Integer>();
 	static {
-		optokens.put("(",0);
-		optokens.put(")",0);
+		optokens.put("(",5);
+		optokens.put(")",5);
 		optokens.put("+",3);
 		optokens.put("-",3);
 		optokens.put("*",1);
@@ -65,11 +63,12 @@ public class TestCompute {
 		
 		System.out.println("input:"+input.toString());
 		
-		int max = 5;
+		int max = 100;//∑¿÷πÀ¿—≠ª∑
 		int counter = 0;
+		String tmp = null;
 		while(counter++ < max){
-			String tmp = null;
-			if(!input.isEmpty()){
+			if(tmp!=null){}
+			else if(!input.isEmpty()){
 				tmp = input.remove(0);
 			}else{
 				tmp = opStacks.pop();
@@ -77,17 +76,29 @@ public class TestCompute {
 			if(optokens.containsKey(tmp)){
 				String preToken = opStacks.peek();
 				if(tmp.equals("=") && preToken.equals("#")){
+					opStacks.pop();
 					return numberStacks.pop();
 				}
-				System.out.println("preToken:"+preToken+optokens.get(preToken));
-				System.out.println("tmp:"+tmp+optokens.get(tmp));
-				if(optokens.get(preToken)<optokens.get(tmp)){
-					opStacks.pop();
-					numberStacks.push(opValue(numberStacks.pop(),numberStacks.pop(),preToken));
+				System.out.println("pre:   "+preToken);
+				System.out.println("tmp:   "+tmp);
+				if(preToken.equals("(") && tmp.equals(")")){
+					opStacks.pop();//µØ≥ˆ "("
+					tmp = null;
 				}
-				opStacks.push(tmp);
+				else{
+					if (!tmp.equals("(") && optokens.get(preToken) < optokens.get(tmp)) {
+						opStacks.pop();
+						numberStacks.push(opValue(numberStacks.pop(),
+								numberStacks.pop(), preToken));
+					}
+					if(!tmp.equals(")")){
+						opStacks.push(tmp);
+						tmp = null;
+					}
+				}
 			}else{
 				numberStacks.push(Double.parseDouble(tmp));
+				tmp = null;
 			}
 			System.out.println("op:"+opStacks.toString());
 			System.out.println("number:"+numberStacks.toString());
@@ -97,7 +108,9 @@ public class TestCompute {
 	}
 	@Test
 	public void test(){
-		String function_ = "6+5";
+		String function_ = "(6+5)*3+(3+6)*4";
+		System.out.println(function_+"="+compute(function_));
+		function_ = "3+4*(3+6)*4";
 		System.out.println(function_+"="+compute(function_));
 	}
 }

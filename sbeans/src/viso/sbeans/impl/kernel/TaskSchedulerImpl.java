@@ -2,19 +2,21 @@ package viso.sbeans.impl.kernel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import viso.sbeans.impl.util.LogWrapper;
 import viso.sbeans.impl.util.NamedThreadFactory;
 import viso.sbeans.task.Task;
 import viso.sbeans.task.TaskQueue;
+import viso.sbeans.task.TaskScheduler;
 
-public class TaskSchedulerImpl {
+public class TaskSchedulerImpl implements TaskScheduler{
 	
-	ExecutorService executor;
+	ScheduledExecutorService executor;
 	
 	private final LogWrapper logger;
 	
@@ -23,8 +25,16 @@ public class TaskSchedulerImpl {
 		this.logger = logger;
 	}
 	
+	public void shutdown(){
+		executor.shutdown();
+	}
+	
 	public Future<?> scheduleTask(Task task){
 		return executor.submit(new TaskImpl(task, null));
+	}
+
+	public Future<?> scheduleTask(Task task, final long delay, final long period){
+		return executor.schedule(new TaskImpl(task, delay, period), delay+period, TimeUnit.MILLISECONDS);
 	}
 	
 	public TaskQueue createTaskQueue(){
@@ -35,10 +45,21 @@ public class TaskSchedulerImpl {
 
 		private final Task task;
 		private final TaskQueueImpl queue;
+		private boolean repeat = false;
+		private long period = 0L;
+		private long start = 0L;
 		
 		public TaskImpl(final Task task, TaskQueueImpl queue){
 			this.task = task;
 			this.queue = queue;
+		}
+		
+		public TaskImpl(final Task task,final long delay, final long period){
+			this.task = task;
+			this.period = period * 1000;
+			this.queue = null;
+			this.start = System.currentTimeMillis()+delay;
+			this.repeat = true;
 		}
 		
 		@Override
@@ -46,6 +67,12 @@ public class TaskSchedulerImpl {
 			// TODO Auto-generated method stub
 			try{
 				task.run();
+				if(this.repeat == true){
+					long nextTime = this.start + period;
+					long currTime = System.currentTimeMillis();
+					this.start = nextTime > currTime ? currTime : nextTime;
+					executor.schedule(this, this.start, TimeUnit.MILLISECONDS);
+				}
 			}catch(Throwable t){
 				logger.logThrow(Level.FINEST, t, "»ŒŒÒ ß∞‹");
 			}

@@ -24,6 +24,7 @@ public class LogWrapper {
 		if(logger.isLoggable(level)){
 			LogRecord lr = new LogRecord(level,message);
 			lr.setParameters(new Object[]{param});
+			log(lr);
 		}
 	}
 	
@@ -31,6 +32,7 @@ public class LogWrapper {
 		if(logger.isLoggable(level)){
 			LogRecord lr = new LogRecord(level,message);
 			lr.setParameters(params);
+			log(lr);
 		}
 	}
 	

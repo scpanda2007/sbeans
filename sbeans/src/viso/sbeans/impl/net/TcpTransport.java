@@ -15,10 +15,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import viso.sbeans.impl.protocol.ProtocolAcceptorImpl;
 import viso.sbeans.impl.util.LogWrapper;
 import viso.sbeans.impl.util.NamedThreadFactory;
 import viso.sbeans.impl.util.PropertyWrapper;
-import viso.sbeans.protocol.ProtocolAcceptor;
 
 public class TcpTransport {
 	
@@ -66,7 +66,7 @@ public class TcpTransport {
 	
 	ConnectionHandler connectionHandler;
 	
-	public void accept(ProtocolAcceptor acceptor){
+	public void accept(ProtocolAcceptorImpl acceptor){
 		if(group.isShutdown()){
 			throw new IllegalStateException("通道组已经关闭");
 		}
@@ -110,9 +110,9 @@ public class TcpTransport {
 	
 	private class ConnectionHandler implements CompletionHandler<AsynchronousSocketChannel,Void>{
 		
-		private final ProtocolAcceptor acceptor;
+		private final ProtocolAcceptorImpl acceptor;
 		
-		public ConnectionHandler(ProtocolAcceptor acceptor){
+		public ConnectionHandler(ProtocolAcceptorImpl acceptor){
 			this.acceptor = acceptor;
 		}
 

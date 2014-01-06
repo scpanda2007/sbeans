@@ -8,6 +8,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.ReadPendingException;
 import java.nio.channels.WritePendingException;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +49,7 @@ public class AsynchronousMessageChannel implements Channel{
 	
 	private int MessageLength(){
 		if(readBuffers.position() >= kPrefixLength){
-			return (readBuffers.get(0) & 0x0f) | ((readBuffers.get(1)<<8) & 0xf0) + kPrefixLength;
+			return (readBuffers.get(1) & 0x0f) | ((readBuffers.get(0)<<8) & 0xf0) + kPrefixLength;
 		}
 		return -1;
 	}
