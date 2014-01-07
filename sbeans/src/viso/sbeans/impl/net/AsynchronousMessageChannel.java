@@ -2,13 +2,13 @@ package viso.sbeans.impl.net;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
 import java.nio.channels.Channel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.ReadPendingException;
 import java.nio.channels.WritePendingException;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,7 +82,7 @@ public class AsynchronousMessageChannel implements Channel{
 				//µÚÒ»´Î¶Á
 				messageLength = MessageLength();
 				if(messageLength > bufferSize){
-					
+					throw new BufferOverflowException();
 				}
 			}
 			if(messageLength >= 0){
@@ -124,12 +124,19 @@ public class AsynchronousMessageChannel implements Channel{
 				message = this.get();
 			}catch(Throwable t){
 				if(handler!=null){
-					handler.failed(t, null);
+					try{
+						handler.failed(t, null);
+					}catch(Exception e){
+					}
 				}
 				return;
 			}
+			
 			if(handler!=null){
-				handler.completed(message,null);
+				try{
+					handler.completed(message,null);
+				}catch(Exception e){
+				}
 			}
 		}
 		
@@ -185,14 +192,20 @@ public class AsynchronousMessageChannel implements Channel{
 			writePending.set(false);
 			try{
 				this.get();
-			}catch(Exception e){
+			}catch(Throwable t){
 				if(handler!=null){
-					handler.failed(e, null);
+					try{
+						handler.failed(t, null);
+					}catch(Exception e){
+					}
 				}
 				return;
 			}
 			if(handler!=null){
-				handler.completed(null, null);
+				try{
+					handler.completed(null, null);
+				}catch(Exception e){
+				}
 			}
 		}
 		

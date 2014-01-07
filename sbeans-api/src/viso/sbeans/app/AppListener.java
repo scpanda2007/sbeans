@@ -1,5 +1,8 @@
 package viso.sbeans.app;
 
-public interface AppListener {
+import viso.sbeans.service.net.ClientSession;
+import viso.sbeans.service.net.SessionListener;
 
+public interface AppListener {
+	public SessionListener newClientSession(long id, ClientSession session);
 }

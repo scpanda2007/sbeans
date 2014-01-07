@@ -1,8 +1,11 @@
 package viso.sbeans.impl.protocol;
 
+import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.ReadPendingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import viso.sbeans.impl.net.AsynchronousMessageChannel;
@@ -17,6 +20,8 @@ import viso.sbeans.task.Task;
 import static viso.sbeans.session.SessionHeader.kLoginRequest;
 import static viso.sbeans.session.SessionHeader.kSessionMessage;
 import static viso.sbeans.session.SessionHeader.kLogoutRequest;
+import static viso.sbeans.session.SessionHeader.kLoginSuccess;
+import static viso.sbeans.session.SessionHeader.kLoginFailed;
 
 public class ProtocolHandlerImpl implements ProtocolHandler{
 
@@ -25,6 +30,7 @@ public class ProtocolHandlerImpl implements ProtocolHandler{
 	SessionHandler sessionHandler;
 	AsynchronousMessageChannel channel;
 	ReadHandler readHandler;
+	WriteHandler writeHandler;
 	LogWrapper logger;
 	
 	public ProtocolHandlerImpl(ProtocolAcceptorImpl acceptor, SessionAcceptor sessionAcceptor, AsynchronousMessageChannel channel, LogWrapper logger){
@@ -32,6 +38,7 @@ public class ProtocolHandlerImpl implements ProtocolHandler{
 		this.sessionAcceptor = sessionAcceptor;
 		this.channel = channel;
 		this.readHandler = new ConnectedReadHandler();
+		this.writeHandler = new ConnectedWriteHandler();
 		this.logger = logger;
 		scheduleRead();
 	}
@@ -155,12 +162,14 @@ public class ProtocolHandlerImpl implements ProtocolHandler{
 			// TODO Auto-generated method stub
 			ProtocolHandlerImpl.this.sessionHandler = sessionHandler;
 			//TODO: write response.
+			sendSessionMessage(new MessageBuffer(8).putByte(kLoginSuccess));
 		}
 
 		@Override
 		public void failed(Throwable t, SessionHandler arg) {
 			// TODO Auto-generated method stub
 			logger.logThrow(Level.FINEST, t, "µÇÂ½ÇëÇó´¦ÀíÊ§°Ü");
+			sendSessionMessage(new MessageBuffer(8).putByte(kLoginFailed));
 		}
 		
 	}
@@ -187,8 +196,14 @@ public class ProtocolHandlerImpl implements ProtocolHandler{
 		if(closed){
 			return;
 		}
+		if(channel.isOpen()){
+			try{
+				channel.close();
+			}catch(IOException e){
+			}
+		}
+		ProtocolHandlerImpl.this.writeHandler = new ClosedWriteHandler();
 		ProtocolHandlerImpl.this.readHandler = new ClosedReadHandler();
-		ProtocolHandlerImpl.this.sessionHandler = null;
 		closed = true;
 	}
 	
@@ -206,5 +221,80 @@ public class ProtocolHandlerImpl implements ProtocolHandler{
 			logger.logThrow(Level.FINEST, t, "µÇ³ö´¦ÀíÊ§°Ü");
 			shutdown();
 		}
+	}
+
+	@Override
+	public void sendSessionMessage(MessageBuffer message) {
+		// TODO Auto-generated method stub
+		try{
+			this.writeHandler.write(message);
+		}catch(Exception e){
+			logger.logThrow(Level.FINEST, e, "·¢ËÍÏûÏ¢Ê§°Ü");
+		}
+	}
+	
+	abstract class WriteHandler implements CompletionHandler<Void,Void>{
+		abstract public void write(MessageBuffer message) throws Exception;
+	}
+	
+	private class ConnectedWriteHandler extends WriteHandler{
+
+		boolean isWriting = false;
+		Object lock = new Object();
+		List<MessageBuffer> messages = new ArrayList<MessageBuffer>();
+		
+		@Override
+		public void write(MessageBuffer message) {
+			// TODO Auto-generated method stub
+			synchronized(lock){
+				if(isWriting){
+					messages.add(message);
+					return;
+				}
+				isWriting = true;
+			}
+			ProtocolHandlerImpl.this.channel.write(message.buffer(), this);
+		}
+
+		@Override
+		public void completed(Void arg0, Void arg1) {
+			// TODO Auto-generated method stub
+			MessageBuffer message = null;
+			synchronized(lock){
+				if(messages.isEmpty()){
+					isWriting = false;
+					return;
+				}
+				message = messages.remove(0);
+			}
+			ProtocolHandlerImpl.this.channel.write(message.buffer(), this);
+		}
+
+		@Override
+		public void failed(Throwable arg0, Void arg1) {
+			// TODO Auto-generated method stub
+			logger.logThrow(Level.FINEST, arg0, "·¢ËÍÏûÏ¢Ê§°Ü");
+		}
+		
+	}
+	
+	private class ClosedWriteHandler extends WriteHandler{
+
+		@Override
+		public void write(MessageBuffer message) throws ClosedChannelException {
+			// TODO Auto-generated method stub
+			throw new ClosedChannelException();
+		}
+
+		@Override
+		public void completed(Void arg0, Void arg1) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void failed(Throwable arg0, Void arg1) {
+			// TODO Auto-generated method stub
+		}
+		
 	}
 }
