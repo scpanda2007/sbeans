@@ -5,5 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/sbeans-com"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sbeans-internal-api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sbeans-api"/>
+	<classpathentry kind="lib" path="D:/sbeans/sbeans/lib/db.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

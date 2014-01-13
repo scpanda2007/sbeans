@@ -21,7 +21,7 @@ public class DummyServer {
 	SessionAcceptor sessionAcceptor;
 	ProtocolAcceptor acceptor;
 	List<SessionListener> liseners = new ArrayList<SessionListener>();
-	
+
 	private static LogWrapper logger = new LogWrapper(Logger
 			.getLogger("dummyServer"));
 
@@ -30,18 +30,18 @@ public class DummyServer {
 		acceptor = new ProtocolAcceptorImpl(new Properties(), sessionAcceptor);
 	}
 
-	public void shutdown(){
+	public void shutdown() {
 		acceptor.shutdown();
 	}
-	
+
 	public void accept() {
 		if (acceptor.isShutdown()) {
 			throw new IllegalStateException("传输层已关闭");
 		}
 		acceptor.accept();
 	}
-	
-	class AppListener implements SessionAcceptor{
+
+	class AppListener implements SessionAcceptor {
 
 		@Override
 		public void newLogin(ProtocolHandler handler,
@@ -52,17 +52,17 @@ public class DummyServer {
 			logger.log(Level.INFO, "有新的用户登录进来了");
 			loginComplete.complete(lisener);
 		}
-		
+
 	}
-	
-	class SessionListener implements SessionHandler{
+
+	class SessionListener implements SessionHandler {
 
 		ProtocolHandler handler;
-		
-		public SessionListener(ProtocolHandler handler){
+
+		public SessionListener(ProtocolHandler handler) {
 			this.handler = handler;
 		}
-		
+
 		@Override
 		public void disconnect(ProtocolHandler handler,
 				ProtocolRequestComplete<Void> complete) {
@@ -75,10 +75,14 @@ public class DummyServer {
 		public void sessionMessage(MessageBuffer message,
 				ProtocolRequestComplete<Void> complete) {
 			// TODO Auto-generated method stub
-			logger.log(Level.INFO, "断开连接");
+			logger.log(Level.INFO, "收到一条消息");
+			switch (message.getInt()) {
+			case 1:
+				System.out.println("" + message.getString());
+			}
 			complete.complete(null);
 		}
-		
+
 	}
 
 }

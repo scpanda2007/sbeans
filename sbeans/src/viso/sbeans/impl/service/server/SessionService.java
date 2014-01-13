@@ -53,11 +53,19 @@ public class SessionService {
 		taskScheduler.shutdown();
 	}
 	
-	class SessionAcceptorImpl implements SessionAcceptor{
+	class LoginTask implements Task{
 
+		private ProtocolHandler handler;
+		private ProtocolRequestComplete<SessionHandler> loginComplete;
+		
+		public LoginTask(final ProtocolHandler handler, 
+				final ProtocolRequestComplete<SessionHandler> loginComplete){
+			this.handler = handler;
+			this.loginComplete = loginComplete;
+		}
+		
 		@Override
-		public void newLogin(ProtocolHandler handler,
-				ProtocolRequestComplete<SessionHandler> loginComplete) {
+		public void run() {
 			// TODO Auto-generated method stub
 			SessionHandlerImpl sessionHandler = null;
 			long id;
@@ -81,6 +89,17 @@ public class SessionService {
 				loginComplete.complete(sessionHandler);
 			}catch(Exception e){
 			}
+		}
+		
+	}
+	
+	class SessionAcceptorImpl implements SessionAcceptor{
+
+		@Override
+		public void newLogin(ProtocolHandler handler,
+				ProtocolRequestComplete<SessionHandler> loginComplete) {
+			// TODO Auto-generated method stub
+			taskScheduler.scheduleTask(new LoginTask(handler,loginComplete));
 		}
 	}
 	

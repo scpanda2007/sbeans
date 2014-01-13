@@ -61,7 +61,12 @@ public class TestAsynchronousMessageChannel {
 			MessageBuffer buffer = new MessageBuffer(1024);
 			buffer.putByte(SessionHeader.kLoginRequest);
 			getClient(0).write(buffer).get();
-			Thread.sleep(1000L);
+			Thread.sleep(500L);
+			MessageBuffer message = new MessageBuffer(1024);
+			message.putByte(SessionHeader.kSessionMessage);
+			message.putInt(1);
+			message.putString("测试 ，你好我是客户端");
+			Thread.sleep(500L);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
