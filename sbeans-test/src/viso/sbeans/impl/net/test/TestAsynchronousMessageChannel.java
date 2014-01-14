@@ -66,6 +66,7 @@ public class TestAsynchronousMessageChannel {
 			message.putByte(SessionHeader.kSessionMessage);
 			message.putInt(1);
 			message.putString("测试 ，你好我是客户端");
+			getClient(0).write(message).get();
 			Thread.sleep(500L);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

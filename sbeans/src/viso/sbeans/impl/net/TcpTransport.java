@@ -136,6 +136,11 @@ public class TcpTransport {
 				return;
 			}
 			logger.logThrow(Level.FINEST, arg0, "服务器端通道监听异常,尝试重启");
+			
+			if(isShutdown()){
+				return;//已经关闭了
+			}
+			
 			try{
 				restart();
 				serverChannel.accept(null, this);

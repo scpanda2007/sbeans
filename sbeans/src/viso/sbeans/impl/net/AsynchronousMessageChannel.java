@@ -10,6 +10,7 @@ import java.nio.channels.CompletionHandler;
 import java.nio.channels.ReadPendingException;
 import java.nio.channels.WritePendingException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,12 +27,9 @@ public class AsynchronousMessageChannel implements Channel{
 	
 	private final int kPrefixLength = 2;
 	
-	private final int bufferSize;
-	
 	public AsynchronousMessageChannel(AsynchronousByteChannel channel,int bufferSize){
 		this.channel = channel;
 		readBuffers = ByteBuffer.allocateDirect(bufferSize);
-		this.bufferSize = bufferSize;
 	}
 	
 	public void close() throws IOException{
@@ -40,23 +38,23 @@ public class AsynchronousMessageChannel implements Channel{
 	
 	private AtomicBoolean readPending = new AtomicBoolean(false);
 	
-	public void read(CompletionHandler<MessageBuffer,Void> readHandler){
+	public Future<MessageBuffer> read(CompletionHandler<MessageBuffer,Void> readHandler){
 		if(!readPending.compareAndSet(false, true)){
 			throw new ReadPendingException();
 		}
-		new Reader(readHandler).startRead();
+		return new Reader(readHandler).start();
 	}
 	
 	private int MessageLength(){
 		if(readBuffers.position() >= kPrefixLength){
-			return (readBuffers.get(1) & 0x0f) | ((readBuffers.get(0)<<8) & 0xf0) + kPrefixLength;
+			return ((short)(readBuffers.get(1) & 0xff) + ((readBuffers.get(0)<<8))) + kPrefixLength;
 		}
 		return -1;
 	}
 	
 	private class Reader extends FutureTask<MessageBuffer> implements CompletionHandler<Integer,Void> {
 		
-		int messageLength = -1;
+		private int messageLength = -1;
 		
 		CompletionHandler<MessageBuffer,Void> handler;
 		
@@ -65,77 +63,95 @@ public class AsynchronousMessageChannel implements Channel{
 			this.handler = handler;
 		}
 		
-		public void startRead(){
-			int length = MessageLength();
-			int pos = readBuffers.position();
-			if(length>0){
-				readBuffers.position(length);
-				readBuffers.limit(pos);
-				readBuffers.compact();
-				messageLength = -1;
+		private Object lock = new Object();
+		
+		public Future<MessageBuffer> start() {
+			synchronized (lock) {
+				if (isDone())
+					return this;
+				int length = MessageLength();
+				int pos = readBuffers.position();
+				if (pos > 0) {
+					if (pos > length) {
+						readBuffers.position(length);
+						readBuffers.limit(pos);
+						readBuffers.compact();
+					} else {
+						readBuffers.clear();
+					}
+				}
+				processBuffer();
+				return this;
 			}
-			processBuffer();
 		}
 		
 		public void processBuffer(){
 			if(messageLength==-1){
 				//第一次读
 				messageLength = MessageLength();
-				if(messageLength > bufferSize){
-					throw new BufferOverflowException();
-				}
-			}
-			if(messageLength >= 0){
-				int pos = readBuffers.position();
-				if(pos >= messageLength){
-					ByteBuffer buffer = readBuffers.duplicate().asReadOnlyBuffer();
-					buffer.position(kPrefixLength);
-					byte[] payload = new byte[messageLength - kPrefixLength];
-					buffer.get(payload);
-					this.set(new MessageBuffer(payload));
+				if(messageLength > 0 && readBuffers.limit() < messageLength){
+					setException(new BufferOverflowException());
 					return;
 				}
+			}
+			if (messageLength > 0 && readBuffers.position() >= messageLength) {
+				ByteBuffer buffer = readBuffers.duplicate();
+				buffer.position(kPrefixLength);
+				byte[] payload = new byte[messageLength - kPrefixLength];
+				buffer.get(payload);
+				this.set(new MessageBuffer(payload));
+				return;
 			}
 			channel.read(readBuffers, null, this);
 		}
 		
 		@Override
 		public void completed(Integer arg0, Void arg1) {
-			// TODO Auto-generated method stub
-			if(arg0.intValue() == -1){
-				this.setException(new EOFException("读到 EOF."));
-				return;
+			synchronized (lock) {
+				if(isDone())return;
+				// TODO Auto-generated method stub
+				if (arg0.intValue() == -1) {
+					this.setException(new EOFException("读到 EOF."));
+					return;
+				}
+				processBuffer();
 			}
-			processBuffer();
 		}
 
 		@Override
 		public void failed(Throwable arg0, Void arg1) {
 			// TODO Auto-generated method stub
-			this.setException(arg0);
+			synchronized (lock) {
+				this.setException(arg0);
+			}
 		}
 		
 		@Override
-		protected void done(){
-			
-			readPending.set(false);
-			MessageBuffer message = null;
-			try{
-				message = this.get();
-			}catch(Throwable t){
-				if(handler!=null){
-					try{
-						handler.failed(t, null);
-					}catch(Exception e){
-					}
-				}
-				return;
+		public boolean cancel(boolean arg0){
+			synchronized (lock) {
+				// 当断开一个连接时
+				return super.cancel(arg0);
 			}
-			
-			if(handler!=null){
-				try{
-					handler.completed(message,null);
-				}catch(Exception e){
+		}
+		
+		@Override
+		protected void done() {
+			synchronized (lock) {
+				readPending.set(false);
+				if(handler == null) return;
+				MessageBuffer message = null;
+				try {
+					message = this.get();
+				} catch (Throwable t) {
+					try {
+						handler.failed(t, null);
+					} catch (Exception e) {
+					}
+					return;
+				}
+				try {
+					handler.completed(message, null);
+				} catch (Exception e) {
 				}
 			}
 		}
@@ -157,10 +173,12 @@ public class AsynchronousMessageChannel implements Channel{
 		
 		ByteBuffer sendBuffer;
 		
+		private Object lock = new Object();
+		
 		public Writer(CompletionHandler<Void,Void> handler,ByteBuffer buffer){
 			super(new FallCallable<Void>());
 			this.handler = handler;
-			int length = buffer.remaining();
+			short length = (short)buffer.remaining();
 			byte[] send = new byte[kPrefixLength+length];
 			send[0] = (byte)(length >>> 8);
 			send[1] = (byte)(length);
@@ -168,43 +186,50 @@ public class AsynchronousMessageChannel implements Channel{
 			sendBuffer = ByteBuffer.wrap(send);
 		}
 		
-		public void startWrite(){
-			channel.write(sendBuffer, null, this);
+		public FutureTask<Void> startWrite() {
+			synchronized (lock) {
+				channel.write(sendBuffer, null, this);
+				return this;
+			}
 		}
 		
 		@Override
 		public void completed(Integer arg0, Void arg1) {
-			// TODO Auto-generated method stub
-			if(sendBuffer.hasRemaining()){
-				channel.write(sendBuffer, null, this);
-				return;
+			synchronized (lock) {
+				// TODO Auto-generated method stub
+				if (sendBuffer.hasRemaining()) {
+					channel.write(sendBuffer, null, this);
+					return;
+				}
+				set(null);
 			}
-			set(null);
 		}
 
 		@Override
 		public void failed(Throwable arg0, Void arg1) {
 			// TODO Auto-generated method stub
-			setException(arg0);
+			synchronized (lock) {
+				setException(arg0);
+			}
 		}
 		
-		protected void done(){
-			writePending.set(false);
-			try{
-				this.get();
-			}catch(Throwable t){
-				if(handler!=null){
-					try{
+		protected void done() {
+			synchronized (lock) {
+				writePending.set(false);
+				if (handler == null)
+					return;
+				try {
+					this.get();
+				} catch (Throwable t) {
+					try {
 						handler.failed(t, null);
-					}catch(Exception e){
+					} catch (Exception e) {
 					}
+					return;
 				}
-				return;
-			}
-			if(handler!=null){
-				try{
+				try {
 					handler.completed(null, null);
-				}catch(Exception e){
+				} catch (Exception e) {
 				}
 			}
 		}
@@ -212,15 +237,13 @@ public class AsynchronousMessageChannel implements Channel{
 	}
 	
 	private class FallCallable<T> implements Callable<T>{
-
 		@Override
 		public T call() throws Exception {
 			// TODO Auto-generated method stub
 			return null;
 		}
-		
 	}
-
+	
 	@Override
 	public boolean isOpen() {
 		// TODO Auto-generated method stub

@@ -90,7 +90,7 @@ public class MessageBuffer {
 		if (position + 2 > limit) {
 			throw new IndexOutOfBoundsException();
 		}
-		return (short) (message[position++] << 8 + (message[position] & 255));
+		return  (short)(((message[position++]) << 8) + (message[position++] & 255));
 	}
 
 	public MessageBuffer putShort(int value) {
@@ -107,18 +107,25 @@ public class MessageBuffer {
 		if (position + 2 > limit) {
 			throw new IndexOutOfBoundsException();
 		}
-		return ((message[position++] & 255) << 8 + (message[position] & 255));
+		return (((message[position++] & 255) << 8) + (message[position++] & 255));
 	}
 
 	public MessageBuffer putUnsignedShort(int value) {
 		return putShort(value);
 	}
-
+	
+	public byte[] rawdata(){
+		return message;
+	}
+	
 	public int getInt() {
 		if (position + 4 > limit) {
 			throw new IndexOutOfBoundsException();
 		}
-		return ((message[position++] & 255) << 24 + (message[position++] & 255) << 16 + (message[position++] & 255) << 8 + (message[position] & 255));
+		return (((message[position++] & 255) << 24)
+				+((message[position++] & 255) << 16)
+				+((message[position++] & 255) << 8)
+				+(message[position++] & 255));
 	}
 
 	public MessageBuffer putInt(int value) {
@@ -137,7 +144,14 @@ public class MessageBuffer {
 		if (position + 8 > limit) {
 			throw new IndexOutOfBoundsException();
 		}
-		return ((long) (message[position++] & 255) << 56 + (long) (message[position++] & 255) << 48 + (long) (message[position++] & 255) << 40 + (long) (message[position++] & 255) << 32 + (long) (message[position++] & 255) << 24 + (long) (message[position++] & 255) << 16 + (long) (message[position++] & 255) << 8 + (long) (message[position] & 255));
+		return ((long) ((message[position++] & 255) << 56) + 
+				(long) ((message[position++] & 255) << 48) + 
+				(long) ((message[position++] & 255) << 40) + 
+				(long) ((message[position++] & 255) << 32) + 
+				(long) ((message[position++] & 255) << 24) + 
+				(long) ((message[position++] & 255) << 16) + 
+				(long) ((message[position++] & 255) << 8) + 
+				(long) ((message[position++] & 255)));
 	}
 
 	public MessageBuffer putLong(long value) {
@@ -278,14 +292,14 @@ public class MessageBuffer {
 				case 5:
 				case 6:
 				case 7:
-					/* 0xxxxxxx*/
+					/* 0xxxxxxx */
 					position++;
 					chars[index++] = (char) c;
 					break;
 
 				case 12:
 				case 13:
-					/* 110x xxxx   10xx xxxx*/
+					/* 110x xxxx 10xx xxxx */
 					position += 2;
 					if (position > utfEnd) {
 						throw new UTFDataFormatException(
@@ -300,7 +314,7 @@ public class MessageBuffer {
 					break;
 
 				case 14:
-					/* 1110 xxxx  10xx xxxx  10xx xxxx */
+					/* 1110 xxxx 10xx xxxx 10xx xxxx */
 					position += 3;
 					if (position > utfEnd) {
 						throw new UTFDataFormatException(
@@ -317,7 +331,7 @@ public class MessageBuffer {
 					break;
 
 				default:
-					/* 10xx xxxx,  1111 xxxx */
+					/* 10xx xxxx, 1111 xxxx */
 					throw new UTFDataFormatException(
 							"malformed input around byte " + position);
 				}

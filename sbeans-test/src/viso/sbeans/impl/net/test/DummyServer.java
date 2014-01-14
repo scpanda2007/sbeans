@@ -75,10 +75,12 @@ public class DummyServer {
 		public void sessionMessage(MessageBuffer message,
 				ProtocolRequestComplete<Void> complete) {
 			// TODO Auto-generated method stub
-			logger.log(Level.INFO, "收到一条消息");
-			switch (message.getInt()) {
-			case 1:
+			int value = message.getInt();
+			switch (value) {
+			case 1:{
 				System.out.println("" + message.getString());
+				break;
+			}
 			}
 			complete.complete(null);
 		}

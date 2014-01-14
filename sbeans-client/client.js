@@ -1,0 +1,1 @@
+document.write("呵呵 脚本测试");
