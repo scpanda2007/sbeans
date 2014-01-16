@@ -17,7 +17,7 @@ public class JavaScriptTest {
 		ScriptEngine engine = semgr.getEngineByName("JavaScript");
 		try {
 			engine.eval(new FileReader("test.js"));
-			System.out.println(String.valueOf(((Invocable)engine).invokeFunction("test")));
+			((Invocable)engine).invokeFunction("test2");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
